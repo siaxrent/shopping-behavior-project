@@ -1,0 +1,12 @@
+{
+  "kmeans_mode": "PCA(15)",
+  "kmeans_best_k": 2,
+  "kmeans_best_silhouette": 0.2147599612957295,
+  "dbscan_clusters": 38,
+  "dbscan_noise_points": 3779,
+  "dbscan_silhouette_no_noise": 0.7579991760181045,
+  "rf_auc": 1.0,
+  "svm_auc": 0.9985923587569445,
+  "best_model": "RF",
+  "best_auc": 1.0
+}
