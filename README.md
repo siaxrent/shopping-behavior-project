@@ -24,3 +24,9 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python main.py
+
+## Run pipeline
+1) Put dataset here: `data/raw/shopping_behavior.csv` (not committed)
+2) Install deps:
+```bash
+pip install -r requirements.txt
