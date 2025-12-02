@@ -30,3 +30,11 @@ python main.py
 2) Install deps:
 ```bash
 pip install -r requirements.txt
+
+## Results (saved artifacts)
+- `results/figures/kmeans_silhouette_by_k.png` — выбор k по Silhouette Score
+- `results/figures/kmeans_pca.png` — визуализация сегментов KMeans (PCA 2D)
+- `results/figures/dbscan_numeric_pca.png` — DBSCAN по числовым признакам (PCA 2D)
+- `results/figures/best_roc_curve_main.png` — ROC-кривая лучшей модели
+- `results/reports/metrics_main.json` — метрики пайплайна (silhouette, AUC и т.д.)
+- `models/best_model.joblib` — сохранённая лучшая модель
