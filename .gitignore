@@ -1,8 +1,22 @@
+# venv + мусор
 .venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.DS_Store
 
-data/raw/
-models/
-results/
+# ДАННЫЕ: не коммитим исходный датасет
+data/raw/*
+!data/raw/.gitkeep
+
+# Results: коммитим только картинки и отчёты
+results/*
+!results/figures/
+!results/reports/
+!results/figures/*.png
+!results/reports/*.json
+!results/reports/*.md
+
+# Models: коммитим только лучшую модель
+models/*
+!models/best_model.joblib
