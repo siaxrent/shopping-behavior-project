@@ -1,149 +1,98 @@
-## Customer Behavior Analysis in an Online Store
+## Анализ поведения покупателей в онлайн‑магазине
 
-**Topic:** analysis of customer behavior in an online store and factors that drive purchases.  
-**Dataset:** Shopping Behavior Dataset (≈3900 records, 18 features).  
-**Goal:** segment customers by behavioral patterns and build a model that predicts subscription status (`Subscription Status` field).
+**Тема:** анализ поведения покупателей в онлайн‑магазине  
+**Цель:** **сегментировать покупателей по паттернам поведения и выявить ключевые факторы покупки/подписки.**
 
-### Project goals
-- **EDA and data cleaning**: inspect dataset structure, check types, missing values, duplicates, feature distributions and correlations (notebook `01_eda.ipynb`).  
-- **Customer clustering**: KMeans + DBSCAN, search for optimal parameters and evaluate quality via **Silhouette Score** (notebook `02_clustering.ipynb` and script `main.py`).  
-- **Segment interpretation**: build cluster profiles based on numerical and categorical features (notebook `03_cluster_profiles.ipynb`).  
-- **Classification (Subscription Status)**: train **RandomForest** and **SVM** models, select the best by **ROC-AUC** and save the final model (notebook `04_classification.ipynb` and script `main.py`).  
-- **Visualization**: save key plots (distributions, clusters in PCA space, ROC curves) into `results/figures`.  
+### Что делает этот проект
+- **EDA и очистка данных** – изучение структуры, пропусков, выбросов, распределений и корреляций (`01_eda.ipynb`).  
+- **Кластеризация покупателей** – применение **KMeans** и **DBSCAN**, оценка качества кластеров по **Silhouette Score** (`02_clustering.ipynb`).  
+- **Построение профилей сегментов** – описание получившихся кластеров по признакам (возраст, сумма покупок, скидки, промокоды и т.д., `03_cluster_profiles.ipynb`).  
+- **Классификация** – обучение моделей **RandomForest** и **SVM** для прогноза целевой переменной (подписка/покупка) и выбор лучшей по **ROC‑AUC** (`04_classification.ipynb`, `main.py`).  
+- **Визуализация** – сохранение графиков сегментов, ROC‑кривых и важности признаков в `results/figures` 
 
-### Project architecture
-- **`main.py`** – main entry script that:
-  - loads raw data from `data/raw/shopping_behavior.csv`;  
-  - builds the feature matrix using a shared preprocessing pipeline;  
-  - searches for the best `k` for KMeans (PCA(15) + grid over `k` from 2 to 15);  
-  - runs a parameter search for DBSCAN on numeric-only features;  
-  - trains classification models (RandomForest and SVM) for the `Subscription Status` target (the target column is removed from features);  
-  - saves the best model to `models/best_model.joblib`, metrics to `results/reports/metrics_main.json`, and plots to `results/figures`.  
+### Описание датасета
+- **Объект анализа:** покупки и поведение клиентов онлайн‑магазина.  
+- **Размер:** ~3900 строк, один клиент на одну покупку.  
+- **Основные группы признаков:**
+  - **Числовые**: возраст (`Age`), сумма покупки в долларах (`Purchase Amount (USD)`), рейтинг отзыва (`Review Rating`), количество предыдущих покупок (`Previous Purchases`).  
+  - **Категориальные**: пол (`Gender`), купленный товар (`Item Purchased`), категория (`Category`), локация (`Location`), размер (`Size`), цвет (`Color`), сезон (`Season`), тип доставки (`Shipping Type`), наличие скидки (`Discount Applied`), промокод (`Promo Code Used`), способ оплаты (`Payment Method`), частота покупок (`Frequency of Purchases`).  
+- **Таргет / бизнес‑метрика:** поле `Subscription Status` (или производный бинарный признак «покупка/подписка»), по которому обучается классификационная модель.  
 
-- **`src/`** – modular pipeline code:
-  - `data_preprocessing.py` – unified preprocessing:
-    - numeric features: `SimpleImputer(strategy="median")` + `StandardScaler`;  
-    - categorical features: `SimpleImputer(strategy="most_frequent")` + `OneHotEncoder(handle_unknown="ignore")`;  
-    - exposes `build_preprocess_pipeline` and `fit_transform_preprocess` for re-use in scripts and notebooks.  
-  - other modules (`clustering.py`, `modeling.py`, `evaluation.py`, `visualization.py`, `utils.py`) are reserved for gradually moving logic out of `main.py` (currently most logic lives in `main.py` and notebooks).  
+### Структура репозитория
+- **`data/`**
+  - `data/raw/shopping_behavior.csv` – исходный датасет *Shopping Behavior Dataset*. URL - https://www.kaggle.com/datasets/ahmadrazakashif/shopping-behavior-dataset 
+  - `data/processed/` – место для сохранения обработанных данных (по желанию).  
+- **`notebooks/`** – точка входа, если вы хотите сначала посмотреть эксперименты:
+  - `01_eda.ipynb` – разведочный анализ и подготовка данных.  
+  - `02_clustering.ipynb` – кластеризация (KMeans, DBSCAN) и Silhouette Score.  
+  - `03_cluster_profiles.ipynb` – профили сегментов и их интерпретация.  
+  - `04_classification.ipynb` – классификация, ROC‑кривые и важность признаков.  
+- **`src/`**
+  - `schema.py` – список числовых и категориальных признаков, ID‑колонки и таргета.  
+  - `data_preprocessing.py` – единый пайплайн нормализации (медианная импутация + `StandardScaler` для числовых, мода + `OneHotEncoder` для категориальных).  
+  - `clustering.py`, `modeling.py`, `evaluation.py`, `visualization.py`, `utils.py` – вспомогательные функции для кластеризации, обучения и оценки моделей.  
+- **`main.py`** – скрипт, который запускает ключевые шаги пайплайна (кластеризация и классификация) без ноутбуков.  
+- **`results/`**
+  - `results/figures/` – сохранённые графики (кластеры, Silhouette Score, ROC, heatmap и т.д.).  
+  - `results/reports/` – JSON‑отчёты с метриками.  
+- **`models/`**
+  - `best_model.joblib` – лучшая модель классификации (RandomForest или SVM по ROC‑AUC).  
 
-- **`notebooks/`** – research notebooks:
-  - `01_eda.ipynb` – initial exploratory analysis, distributions and correlations;  
-  - `02_clustering.ipynb` – experimental tuning of clustering parameters;  
-  - `03_cluster_profiles.ipynb` – interpretation and analysis of resulting segments;  
-  - `04_classification.ipynb` – experiments with classification models and feature importance.  
+### Этапы решения
+1. **EDA, очистка и нормализация**
+   - загрузка `shopping_behavior.csv`;  
+   - проверка пропусков, дубликатов, типов;  
+   - базовые графики распределений и корреляций;  
+   - приведение признаков к удобному виду и построение пайплайна предобработки.  
+2. **Кластеризация (KMeans, DBSCAN)**
+   - нормализация признаков и при необходимости понижение размерности (PCA);  
+   - перебор числа кластеров для KMeans и параметров `eps`, `min_samples` для DBSCAN;  
+   - выбор лучшей конфигурации по **Silhouette Score** и визуализация сегментов.  
+3. **Построение кластерных профилей**
+   - сравнение средних значений признаков между сегментами;  
+   - словесное описание сегментов (частота покупок, использование скидок, демография и т.п.).  
+4. **Классификация (RandomForest, SVM)**
+   - формирование целевого признака (подписка/покупка);  
+   - обучение моделей RandomForest и SVM;  
+   - сравнение по **ROC‑AUC**, выбор лучшей модели и сохранение её в `models/`;  
+   - анализ важности признаков (permutation importance) и сохранение графиков.  
 
-- **`data/`**:
-  - `data/raw/` – raw data (`shopping_behavior.csv`, not committed to the repository);  
-  - `data/processed/` – possible saved intermediate datasets.  
-
-- **`results/`**:
-  - `results/figures/` – all saved plots (Silhouette for KMeans, PCA cluster visualization, ROC curves, correlations, etc.);  
-  - `results/reports/` – JSON files with training metrics (`metrics_main.json` and others).  
-
-- **`models/`**:
-  - `best_model.joblib` – serialized best classification model (RandomForest or SVM, depending on ROC-AUC).  
-
-### Pipeline logic (high-level)
-- **1. Data loading**
-  - CSV file `shopping_behavior.csv` is loaded from `data/raw/`.  
-  - In the EDA notebook, missing values, duplicates, data types and basic statistics are checked.  
-
-- **2. Feature preprocessing**
-  - A common end-to-end preprocessing pipeline is built using `ColumnTransformer` + `Pipeline` from `scikit-learn`.  
-  - Numeric features are imputed with the median and scaled via `StandardScaler`.  
-  - Categorical features are one-hot encoded with `OneHotEncoder(handle_unknown="ignore")`.  
-  - For clustering tasks, `fit_transform_preprocess` can use all features (including `Subscription Status` as categorical), which is acceptable for descriptive segmentation.  
-
-- **3. Clustering (customer segmentation)**
-  - **KMeans**:
-    - features are first transformed and reduced via **PCA(15)**;  
-    - `k` is searched from 2 to 15;  
-    - for each `k`, the average **Silhouette Score** is computed and the best `k` is selected;  
-    - the script plots and saves `k` vs Silhouette (`kmeans_pca15_silhouette_by_k.png`) as well as a scatter of the first two principal components colored by clusters.  
-  - **DBSCAN** (numeric-only):
-    - uses numeric columns: `Age`, `Purchase Amount (USD)`, `Review Rating`, `Previous Purchases`;  
-    - applies normalization (imputer + scaler);  
-    - searches a grid of `eps` and `min_samples`, evaluates number of clusters, noise points, and Silhouette Score (without noise);  
-    - logs the best configuration, visualizes it in 2D via PCA and saves the figure.  
-
-- **4. Classification (predicting Subscription Status)**
-  - The target is built by `make_target_subscription` in `main.py`:
-    - `"Yes" → 1`, `"No" → 0`; for any other value an explicit error is raised.  
-  - The `Subscription Status` column is **explicitly removed** from features to avoid target leakage.  
-  - Data is split into train/test with `test_size=0.2` and stratification by the target.  
-  - Two models are trained:
-    - **RandomForestClassifier** with 300 trees and `class_weight="balanced"`;  
-    - **SVM (RBF)** with `C=2.0`, `probability=True`, `class_weight="balanced"`.  
-  - **ROC-AUC** is computed for both models, the best one is selected and saved:
-    - model → `models/best_model.joblib`;  
-    - metrics and meta-information → `results/reports/metrics_main.json`;  
-    - ROC curve of the best model → `results/figures/best_roc_curve_main.png`.  
-
-### How to run the project
-- **Requirements:**
+### Как запустить
+- **Требования:**
   - Python 3.10+;  
-  - `pip` installed.  
+  - `pip`.  
 
-- **Setup steps:**
-  1. Clone or copy the repository.  
-  2. (Recommended) create a virtual environment:
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux / macOS
-```
-
-  3. Install dependencies:
+- **Шаги:**
+  1. Установите зависимости:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-  4. Download the **Shopping Behavior Dataset** (e.g. from Kaggle) and save the file as:
+  2. Скачайте *Shopping Behavior Dataset* и сохраните как:
 
 ```text
 data/raw/shopping_behavior.csv
 ```
 
-- **Run the main pipeline:**
+  3. Для интерактивного цикла (разобраться в задаче и коде) откройте ноутбуки в `notebooks/`.  
+  4. Чтобы прогнать основной пайплайн из консоли, выполните:
 
 ```bash
 python main.py
 ```
 
-After execution you will get:
-- the saved model in `models/best_model.joblib`;  
-- metric files in `results/reports/metrics_main.json`;  
-- plots in `results/figures/`.  
+После выполнения вы получите обученную модель в `models/`, метрики в `results/reports/` и ключевые графики в `results/figures/`.
 
-### How to interpret the results
-- **Metrics in `metrics_main.json`:**
-  - `kmeans_best_k`, `kmeans_best_silhouette` – final number of clusters and their quality via Silhouette;  
-  - `dbscan_clusters`, `dbscan_noise_points`, `dbscan_silhouette_no_noise` – DBSCAN cluster statistics;  
-  - `rf_auc`, `svm_auc`, `best_model`, `best_auc` – classification performance and the chosen best model.  
-- **Plots in `results/figures`:**
-  - Silhouette for KMeans across different `k`;  
-  - cluster visualization on the first two principal components;  
-  - ROC curve of the best model, correlation heatmap and other diagnostic plots.  
-- **Cluster profiles:** notebook `03_cluster_profiles.ipynb` highlights which features differentiate segments (age, average purchase amount, activity, etc.), which can directly feed into marketing hypotheses.  
+### С чего начать при первом открытии
+- Хотите быстро понять **о чём данные** – откройте `01_eda.ipynb`.  
+- Интересует **сегментация клиентов** – смотрите `02_clustering.ipynb` и `03_cluster_profiles.ipynb`.  
+- Нужна **модель прогноза вероятности покупки/подписки** – переходите к `04_classification.ipynb` и смотрите ROC‑кривые и важность признаков.  
 
-### Ideas for further improvements (architecture and code)
-- **Move logic from `main.py` into `src/` modules:**
-  - create dedicated functions/classes for clustering, hyperparameter search, training classifiers, saving artifacts and logging;  
-  - this will improve reusability, testability and code clarity.  
-- **Configuration via config files:**
-  - store paths and model parameters (range of `k`, DBSCAN grid, RF/SVM hyperparameters) in `config.yaml` or `config.json`;  
-  - this allows changing experiments without touching the code.  
-- **Logging instead of `print`:**
-  - use the `logging` module with levels (`INFO`, `DEBUG`, `WARNING`) and log-to-file.  
-- **Richer model evaluation:**
-  - add `classification_report`, confusion matrix and PR curves to the main pipeline;  
-  - save additional evaluation artifacts in `results/reports/`.  
-- **Testing and robustness:**
-  - add simple unit tests for `data_preprocessing.py` and target construction;  
-  - harden the pipeline against unexpected values in `Subscription Status` and other data anomalies.  
+### Краткие выводы
+- **Сегментация клиентов** показывает несколько устойчивых групп: активные покупатели, часто использующие скидки и промокоды; более редкие покупатели с высокой суммой чека; а также малоактивные клиенты.  
+- По результатам permutation importance и моделей классификации ключевыми факторами покупки/подписки оказываются **использование промокода**, **наличие скидки**, а также характеристики покупателя и заказа (частота покупок, сумма покупки, пол, способ оплаты).  
+- Модели **RandomForest** и **SVM** достигают ROC‑AUC около 0.89 на тестовой выборке, что позволяет достаточно надёжно оценивать вероятность покупки/подписки.  
 
-All these improvements can be introduced gradually without breaking the existing logic and the current way of running the project through `main.py`.
+Проект демонстрирует полный цикл: от анализа поведения покупателей и построения сегментов до разработки и интерпретации модели, прогнозирующей вероятность покупки.
 
